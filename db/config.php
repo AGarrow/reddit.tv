@@ -1,43 +1,47 @@
 <?php
 
-if(file_exists(dirname(realpath(__FILE__)) . '/config-local.php')){
-	require_once(dirname(realpath(__FILE__)) . '/config-local.php');
+define('BASE_PATH', dirname(realpath(__FILE__)) . '/../');
+define('UPLOAD_PATH', dirname(realpath(__FILE__)) . '/../uploads/');
+define('UPLOAD_URL', 'uploads/');
+define('AWS_BUCKET', 'reddittv');
+define('USE_SQLITE', false);
+
+// Since user auth is done via .htpasswd, there's no need to support per-user 
+// CSRF tokens. Replace this when / if user auth gets added to admin panel.
+define('CSRF_TOKEN', 'REPLACE_ME');
+
+// Include RedbeanPHP
+require_once(dirname(__FILE__).'/rb.php');
+
+if (USE_SQLITE) {
+	// SQLite Setup
+	R::setup('sqlite:'.realpath(dirname(__FILE__)).'/database.s3db');
+} else {
+	// MySQL Setup
+	$dbhost = '127.0.0.1';
+	$dbport = '3306';
+	$dbname = 'reddittv';
+
+	$username = 'reddittv';
+	$password = $_ENV['DB_PASS'];
+
+	R::setup("mysql:host=$dbhost;port=$dbport;
+		dbname=$dbname",$username,$password);
 }
-else {
-	define('BASE_PATH', dirname(realpath(__FILE__)) . '/../');
-	define('UPLOAD_PATH', dirname(realpath(__FILE__)) . '/../uploads/');
-	define('UPLOAD_URL', 'uploads/');
-	define('AWS_BUCKET', $_SERVER['S3_BUCKET']);
-	define('USE_SQLITE', false);
 
-	// Include RedbeanPHP
-	require_once(dirname(__FILE__).'/rb.php');
+// Free db from schema changes
+R::freeze(true);
 
-	if(!USE_SQLITE && !empty($_SERVER['RDS_HOSTNAME'])){
-		$dbhost = $_SERVER['RDS_HOSTNAME'];
-		$dbport = $_SERVER['RDS_PORT'];
-		$dbname = $_SERVER['RDS_DB_NAME'];
-
-		$username = $_SERVER['RDS_USERNAME'];
-		$password = $_SERVER['RDS_PASSWORD'];
-
-		R::setup("mysql:host=$dbhost;port=$dbport;
-	    	dbname=$dbname",$username,$password);
-	}
-	else{
-		R::setup('sqlite:'.realpath(dirname(__FILE__)).'/database.s3db');
-	}
-
-	// Free db from schema changes
-	R::freeze(true);
-
-	if(class_exists('Memcache')){
-		// Connection creation
-		$memcache = new Memcache;
-		$cacheAvailable = $memcache->connect($_SERVER['MEMCACHED_HOST'], $_SERVER['MEMCACHED_PORT']);
-	} else {
-		$cacheAvailable = false;
-	}
+if(class_exists('Memcache')){
+	// Connection constants
+	define('MEMCACHED_HOST', '127.0.0.1');
+	define('MEMCACHED_PORT', '3306');
+	 
+	// Connection creation
+	$memcache = new Memcache;
+	$cacheAvailable = $memcache->connect(MEMCACHED_HOST, MEMCACHED_PORT);
+} else {
+	$cacheAvailable = false;
 }
 
 ?>
