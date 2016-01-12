@@ -23,7 +23,7 @@ if (USE_SQLITE) {
 	$dbname = 'reddittv';
 
 	$username = 'reddittv';
-	$password = $_ENV['DB_PASS'];
+	$password = getenv('DB_PASS');
 
 	R::setup("mysql:host=$dbhost;port=$dbport;
 		dbname=$dbname",$username,$password);
