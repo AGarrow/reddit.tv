@@ -18,7 +18,7 @@ if (USE_SQLITE) {
 	R::setup('sqlite:'.realpath(dirname(__FILE__)).'/database.s3db');
 } else {
 	// MySQL Setup
-	$dbhost = 'ip-172-31-56-89.ec2.internal';
+	$dbhost = '127.0.0.1';
 	$dbport = '3306';
 	$dbname = 'reddittv';
 
@@ -34,7 +34,7 @@ R::freeze(true);
 
 if(class_exists('Memcache')){
 	// Connection constants
-	define('MEMCACHED_HOST', 'ip-172-31-56-89.ec2.internal');
+	define('MEMCACHED_HOST', '127.0.0.1');
 	define('MEMCACHED_PORT', '3306');
 	 
 	// Connection creation
